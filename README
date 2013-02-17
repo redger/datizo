@@ -1,0 +1,10 @@
+DATIZO: DAte TIme ZOne
+
+The Datizo project is made of two several parts:
+
+1. "libdtz" is the Datizo library written in the "D programming language".
+2. "datizo" is a command-line utility based on the library.
+
+Datizo enables developers to perform quick calendrical calculations.
+It doesn't use the "std.datetime" of Phobos or Tango from D.
+
