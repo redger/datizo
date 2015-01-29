@@ -44,7 +44,7 @@ const string[12] MONTH_NAMES = [
 
 const string[7] WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-const int32[12][2] DAYS_BEFORE_MONTH = [
+const int16[12][2] DAYS_BEFORE_MONTH = [
 	[0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334],
 	[0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335],
 ];
@@ -67,14 +67,14 @@ struct GregorianCal {
 
 
 struct Date {
-	int64 year  = 1;
-	int08 month = 1;
-	int08 day   = 1;
+	int64 year;
+	int08 month;
+	int08 day;
 
-	int08 lastDOM = GregorianCal.lastDayOfMonth(1, 1);
+	int08 lastDOM;
 	bool isLeapYear;
 
-	this(int64 y, int08 mo, int08 d) {
+	private this(int64 y, int08 mo, int08 d) {
 		enforce( y  >= -9999 && y  <= 9999, Error.YEAR_OOR  );
 		enforce( mo >=     1 && mo <=   12, Error.MONTH_OOR );
 		
@@ -87,6 +87,12 @@ struct Date {
 		day = d;
 	}
 
+	public static of(int64 y, int08 mo, int08 d) {
+		return Date(y, mo, d);
+	}
+
+	public static immutable Date EPOCH = Date.of(1, 1, 1);
+
 	string toString() {
 		return format("%04d-%02d-%02d", year, month, day);
 	}
@@ -98,7 +104,7 @@ struct Time {
 	int08 second;
 	int32 nanosecond;
 
-	this(int08 h, int08 mi, int08 s, int32 ns) {
+	private this(int08 h, int08 mi, int08 s, int32 ns) {
 		enforce( h  >= 0 && h  < 24,             Error.HOUR_OOR       );
 		enforce( mi >= 0 && mi < 60,             Error.MINUTE_OOR     );
 		enforce( s  >= 0 && s  < 60,             Error.SECOND_OOR     );
@@ -109,9 +115,13 @@ struct Time {
 		second = s;
 		nanosecond = ns;	
 	}
+
+	public static of(int08 h, int08 mi, int08 s, int32 ns) {
+		return Time(h, mi, s, ns);
+	}
 	
-	static immutable Time MIDNIGHT = Time( 0, 0, 0, 0);
-	static immutable Time NOON     = Time(12, 0, 0, 0);
+	public static immutable Time MIDNIGHT = Time.of( 0, 0, 0, 0);
+	public static immutable Time NOON     = Time.of(12, 0, 0, 0);
 
 	string toString() {
 		return format("%02d:%02d:%02d.%09d", hour, minute, second, nanosecond);
@@ -128,7 +138,7 @@ struct Zone {
 	Sign sign = Sign.PLUS;
 	Time offset = Time.MIDNIGHT;
 	
-	this(Sign si, int08 h, int08 mi) {
+	private this(Sign si, int08 h, int08 mi) {
 		sign = si;
 		symbol = "-+"[si >= 0];
 		
@@ -139,8 +149,12 @@ struct Zone {
 			throw new Exception( Error.TZ_OFFSET );
 		}
 	}
+
+	public static of(Sign si, int08 h, int08 mi) {
+		return Zone(si, h, mi);
+	}
 	
-	static immutable Zone ZULU = Zone(Sign.PLUS, 0, 0);
+	public static immutable Zone ZULU = Zone.of(Sign.PLUS, 0, 0);
 
 	string toString() {
 		return "-+"[sign >= 0]~offset.toString[0..5];
@@ -187,11 +201,11 @@ struct Datizo {
 		zone = zo;
 
 		//TODO other validations go here
-		// compute ratadie with time + zone, leap seconds, etc
+		//compute ratadie with time + zone, leap seconds, etc
 	}
 
 	public static Datizo of(int64 y, int08 mo, int08 d) {
-		Date da = Date(y, mo, d);
+		Date da = Date.of(y, mo, d);
 		Time ti = Time.MIDNIGHT;
 		Zone zo = Zone.ZULU;
 
@@ -199,17 +213,17 @@ struct Datizo {
 	}
 
 	public static Datizo of(int64 y, int08 mo, int08 d, int08 h, int08 mi, int08 s, int32 ns) {
-		Date da = Date(y, mo, d);
-		Time ti = Time(h, mi, s, ns);
+		Date da = Date.of(y, mo, d);
+		Time ti = Time.of(h, mi, s, ns);
 		Zone zo = Zone.ZULU;
 
 		return Datizo(da, ti, zo);
 	}
 
 	public static Datizo of(int64 y, int08 mo, int08 d, int08 h, int08 mi, int08 s, int32 ns, Sign zsi, int08 zh, int08 zmi) {
-		Date da = Date(y, mo, d);
-		Time ti = Time(h, mi, s, ns);
-		Zone zo = Zone(zsi, zh, zmi);
+		Date da = Date.of(y, mo, d);
+		Time ti = Time.of(h, mi, s, ns);
+		Zone zo = Zone.of(zsi, zh, zmi);
 
 		return Datizo(da, ti, zo);
 	}
@@ -254,29 +268,29 @@ struct Datizo {
 
 		int08 d = to!int08( m.captures[3] );
 
-		da = Date(y, mo, d);
+		da = Date.of(y, mo, d);
 
 		//TIME PART
 		if (m.captures[4] != null) {
-			int08 h   = to!int08( m.captures[5] );
+			int08 h  = to!int08( m.captures[5] );
 			int08 mi = to!int08( m.captures[6] );
-			int08 s = to!int08( m.captures[7] );
+			int08 s  = to!int08( m.captures[7] );
 			
 			int32 ns;
 			if (m.captures[8] != null) {
 				string nanosecond = m.captures[8][1..$] ~ "00000000";
-				ns = to!int32( nanosecond[0..9] );
+				ns   = to!int32( nanosecond[0..9] );
 			}
 			
-			ti = Time(h, mi, s, ns);
+			ti = Time.of(h, mi, s, ns);
 			
 			//ZONE PART
 			if (m.captures[9] != "Z") {
-				Sign zsi = (m.captures[10] == "+") ? Sign.PLUS : Sign.MINUS;				
+				Sign zsi  = (m.captures[10] == "+") ? Sign.PLUS : Sign.MINUS;				
 				int08 zh  = to!int08( m.captures[11] );
 				int08 zmi = to!int08( m.captures[12] );
 				
-				zo = Zone(zsi, zh, zmi);
+				zo = Zone.of(zsi, zh, zmi);
 			}
 		}
 
