@@ -39,7 +39,7 @@ struct Zone {
 	Time  offset = Time();
 
 	string toString() {
-		return "-+"[sign >= 0]~format("%02d:%02d", offset.hour, offset.minute);
+		return "-+"[sign >= 0]~offset.toString[0..5];
 	}
 }
 
