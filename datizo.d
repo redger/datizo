@@ -1,3 +1,41 @@
+/++
+-----------===[   DATIZO  (DAte TIme ZOne)   ]===-----------
+  _____     ______     ______   __     ______     ______
+ /\  __-.  /\  __ \   /\__  _\ /\ \   /\___  \   /\  __ \
+ \ \ \/\ \ \ \  __ \  \/_/\ \/ \ \ \  \/_/  /__  \ \ \/\ \
+  \ \____-  \ \_\ \_\    \ \_\  \ \_\   /\_____\  \ \_____\
+   \/____/   \/_/\/_/     \/_/   \/_/   \/_____/   \/_____/
+
+------------===[ +1955-NOV-05T06:00:00.000Z ]===------------
+
+                          "OUTATIME!"
+
+  "This is what makes time travel possible."
+  -Doc Brown
+
+  "Forget about the Date type. Here comes the Datizo type."
+  -Redger
+
+Note:
+	Datizo is the DAte/TIme/ZOne [re]processor.
+
+	This software focuses on calendrical calculations,
+	conversions between timestamps of various operating
+	systems and languages.
+
+	Most algorithms are from the book:
+		Calendrical Calculations (3r edition)
+
+Software license:
+	GPL3
+
+Author:
+    'Redger' I. CORNICE <idriss.cornice@gmail.com>
+
+Version:
+	2015-01-29
+++/
+
 module datizo;
 
 import std.stdio;
