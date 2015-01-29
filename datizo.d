@@ -228,49 +228,8 @@ struct Clock {
 	}
 }
 
-struct Datizo {
-	Date date;
-	Time time;
-	Zone zone;
-
-	private this(Date da, Time ti, Zone zo) {
-		date = da;
-		time = ti;
-		zone = zo;
-
-		//TODO other validations go here
-		//compute ratadie with time + zone, leap seconds, etc
-	}
-
-	public static Datizo of(int64 y, int08 mo, int08 d) {
-		Date da = Date.of(y, mo, d);
-		Time ti = Time.MIDNIGHT;
-		Zone zo = Zone.ZULU;
-
-		return Datizo(da, ti, zo);
-	}
-
-	public static Datizo of(int64 y, int08 mo, int08 d, int08 h, int08 mi, int08 s, int32 ns) {
-		Date da = Date.of(y, mo, d);
-		Time ti = Time.of(h, mi, s, ns);
-		Zone zo = Zone.ZULU;
-
-		return Datizo(da, ti, zo);
-	}
-
-	public static Datizo of(int64 y, int08 mo, int08 d, int08 h, int08 mi, int08 s, int32 ns, Sign zsi, int08 zh, int08 zmi) {
-		Date da = Date.of(y, mo, d);
-		Time ti = Time.of(h, mi, s, ns);
-		Zone zo = Zone.of(zsi, zh, zmi);
-
-		return Datizo(da, ti, zo);
-	}
-
-	public static Datizo now() {
-		return Clock.fromOS();
-	}
-	
-	public static Datizo of(string input) {
+struct Parser {
+	public static Datizo regex(string input) {
 		auto m = match(input, REG_ISO8601);
 
 		if (m.empty) {
@@ -324,7 +283,7 @@ struct Datizo {
 			
 			//ZONE PART
 			if (m.captures[9] != "Z") {
-				Sign zsi  = (m.captures[10] == "+") ? Sign.PLUS : Sign.MINUS;				
+				Sign  zsi = (m.captures[10] == "+") ? Sign.PLUS : Sign.MINUS;				
 				int08 zh  = to!int08( m.captures[11] );
 				int08 zmi = to!int08( m.captures[12] );
 				
@@ -332,7 +291,58 @@ struct Datizo {
 			}
 		}
 
+		return Datizo.of(da, ti, zo);
+	}
+}
+
+struct Datizo {
+	Date date;
+	Time time;
+	Zone zone;
+
+	private this(Date da, Time ti, Zone zo) {
+		date = da;
+		time = ti;
+		zone = zo;
+
+		//TODO other validations go here
+		//compute ratadie with time + zone, leap seconds, etc
+	}
+
+	public static Datizo of(Date da, Time ti, Zone zo) {
 		return Datizo(da, ti, zo);
+	}
+
+	public static Datizo of(int64 y, int08 mo, int08 d) {
+		Date da = Date.of(y, mo, d);
+		Time ti = Time.MIDNIGHT;
+		Zone zo = Zone.ZULU;
+
+		return Datizo(da, ti, zo);
+	}
+
+	public static Datizo of(int64 y, int08 mo, int08 d, int08 h, int08 mi, int08 s, int32 ns) {
+		Date da = Date.of(y, mo, d);
+		Time ti = Time.of(h, mi, s, ns);
+		Zone zo = Zone.ZULU;
+
+		return Datizo(da, ti, zo);
+	}
+
+	public static Datizo of(int64 y, int08 mo, int08 d, int08 h, int08 mi, int08 s, int32 ns, Sign zsi, int08 zh, int08 zmi) {
+		Date da = Date.of(y, mo, d);
+		Time ti = Time.of(h, mi, s, ns);
+		Zone zo = Zone.of(zsi, zh, zmi);
+
+		return Datizo(da, ti, zo);
+	}
+
+	public static Datizo now() {
+		return Clock.fromOS();
+	}
+	
+	public static Datizo of(string input) {
+		return Parser.regex( input.idup );
 	}
 	
 	public void print() {
@@ -360,10 +370,6 @@ struct Datizo {
 		writeln();
 		//writeln("weekdate: ",         date.weekdate);
 	}
-	
-	Datizo opAssign(string input) {
-		return Datizo.of( input );
-	}
 
 	string toString() {
 		return date.toString~'T'~time.toString~zone.toString;
@@ -378,7 +384,7 @@ void main() {
 	Datizo dtz = Datizo.of("1985-OCT-26T01:21:00Z");
 	dtz.print();
 
-	// simple check 2
+	// simple check 3
 	Datizo now = Datizo.now();
 	now.print();
 
